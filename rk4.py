@@ -52,7 +52,7 @@ def print_graphics(t, x):
     # plt.subplot(1, 2, 1)
     plt.plot(t, x[0, :], "r", label="Preys")
     plt.plot(t, x[1, :], "b", label="Predators1")
-    plt.plot(t, x[2, :], "g", label="Predators2")
+    #plt.plot(t, x[2, :], "g", label="Predators2")
     # plt.plot(t, x[2, :], "g", label="Predators2")
     plt.ylabel("Количество (тыс.)")
     plt.xlabel("Время (t)")
@@ -66,26 +66,23 @@ def print_graphics(t, x):
     # plt.grid()
     plt.show()
 
-def test1Function(x, params):
+def Rabbits_Foxes_Function(x, params):
     e1 = params['e1']
     e2 = params['e2']
     a1 = params['a1']
     a2 = params['a2']
-    k1 = params['k1']
-    k2 = params['k3']
-    new_x = np.array([x[0] * (e1 - a1 * x[1] - k1 * x[0]),
-                      -x[1] * (e2 - a2 * x[0] + k2 * x[1])])
+    new_x = np.array([x[0] * (e1 - a1 * x[1]),
+                      -x[1] * (e2 - a2 * x[0])])
     return new_x
 
-def test1():
+def Rabbits_Foxes():
     params = {"e1": 4, "a1": 2,
-              "e2": 1, "a2": 1,
-              "e3": 0.2, "a5": 0.02}
+              "e2": 1, "a2": 1}
 
-    f = lambda t, x: test1Function(x, params)
-    x0 = np.array([100., 100.])  # initial condition
+    f = lambda t, x: Rabbits_Foxes_Function(x, params)
+    x0 = np.array([1., 1.])  # initial condition
     t0 = 0  # time
-    tf = 100  # end of time
+    tf = 30  # end of time
     dt = 0.01  # step
     x, t = RK4(f, x0, t0, tf, dt)
     print_graphics(t, x)
@@ -103,4 +100,4 @@ def test2():
 
 
 #test1()
-test2()
+Rabbits_Foxes()
