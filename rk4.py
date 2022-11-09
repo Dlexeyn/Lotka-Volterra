@@ -48,11 +48,12 @@ def RK4(f, x0, t0, tf, dt):
         x[:, k + 1] = x[:, k] + dx
     return x, t
 
+
 def print_graphics(t, x):
     # plt.subplot(1, 2, 1)
     plt.plot(t, x[0, :], "r", label="Preys")
     plt.plot(t, x[1, :], "b", label="Predators1")
-    #plt.plot(t, x[2, :], "g", label="Predators2")
+    # plt.plot(t, x[2, :], "g", label="Predators2")
     # plt.plot(t, x[2, :], "g", label="Predators2")
     plt.ylabel("Количество (тыс.)")
     plt.xlabel("Время (t)")
@@ -66,6 +67,7 @@ def print_graphics(t, x):
     # plt.grid()
     plt.show()
 
+
 def Rabbits_Foxes_Function(x, params):
     e1 = params['e1']
     e2 = params['e2']
@@ -74,6 +76,23 @@ def Rabbits_Foxes_Function(x, params):
     new_x = np.array([x[0] * (e1 - a1 * x[1]),
                       -x[1] * (e2 - a2 * x[0])])
     return new_x
+
+
+def Producer_Consumer_Predator_Function(x, params):
+    a = params['a']
+    l = params['l']
+    k = params['k']
+    g1 = params['g1']
+    g2 = params['g2']
+    h1 = params['h1']
+    h2 = params['h2']
+    c1 = params['c1']
+    c2 = params['c2']
+    new_x = np.array([a * x[0] * (x[0] - l) * (1 - x[0] / k) - g1 * x[0] * x[1],
+                      h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
+                      h2 * x[1] * x[2] - c2 * x[2]])
+    return new_x
+
 
 def Rabbits_Foxes():
     params = {"e1": 4, "a1": 2,
@@ -87,6 +106,20 @@ def Rabbits_Foxes():
     x, t = RK4(f, x0, t0, tf, dt)
     print_graphics(t, x)
 
+
+def Producer_Consumer_Predator():
+    params = {"a": 1, "l": 1, "k": 1000000,
+              "g1": 1, "g2": 1, "h1": 2,
+              "h2": 2, "c1": 1, "c2": 2}
+    f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
+    x0 = np.array([1., 1., 1.])
+    t0 = 0
+    tf = 30
+    dt = 0.01
+    x, t = RK4(f, x0, t0, tf, dt)
+    print_graphics(t, x)
+
+
 def test2():
     params = {"alpha": 0.5, "beta": 1.}
 
@@ -99,5 +132,5 @@ def test2():
     print_graphics(t, x)
 
 
-#test1()
-Rabbits_Foxes()
+# test1()
+Producer_Consumer_Predator()
