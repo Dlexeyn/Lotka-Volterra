@@ -78,6 +78,8 @@ def Rabbits_Foxes_Function(x, params):
     return new_x
 
 
+
+
 def Rabbits_Foxes():
     params = {"e1": 4, "a1": 2,
               "e2": 1, "a2": 1}
@@ -107,10 +109,41 @@ def Prey_Prey_Predator_Function(x, params):
     return new_x
 
 
+def Producer_Consumer_Predator_Function(x, params):
+    a = params['a']
+    l = params['l']
+    k = params['k']
+    g1 = params['g1']
+    g2 = params['g2']
+    h1 = params['h1']
+    h2 = params['h2']
+    c1 = params['c1']
+    c2 = params['c2']
+    new_x = np.array([a * x[0] * (x[0] - l) * (1 - x[0] / k) - g1 * x[0] * x[1],
+                      h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
+                      h2 * x[1] * x[2] - c2 * x[2]])
+    return new_x
+    
+    
+def Producer_Consumer_Predator():
+    params = {"a": 1, "l": 1, "k": 1000000,
+              "g1": 1, "g2": 1, "h1": 2,
+              "h2": 2, "c1": 1, "c2": 2}
+    f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
+    x0 = np.array([1., 1., 1.])
+    t0 = 0
+    tf = 30
+    dt = 0.01
+    x, t = RK4(f, x0, t0, tf, dt)
+    print_graphics(t, x)
+
+
+
 def Prey_Prey_Predator():
     params = {"alpha": 2.4, "a1": 6, "b1": 4,
               "beta": 1.57, "a2": 1, "b2": 10,
               "d1": 0.25, "d2": 4}
+
 
     f = lambda t, x: Prey_Prey_Predator_Function(x, params)
     x0 = np.array([4, 3, 1])  # initial condition
@@ -122,6 +155,7 @@ def Prey_Prey_Predator():
     print_graphics(t, x, 3, labels)
 
 
-# test1()
+
+Producer_Consumer_Predator()
 #Rabbits_Foxes()
 Prey_Prey_Predator()
