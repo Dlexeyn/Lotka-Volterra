@@ -123,10 +123,10 @@ def Producer_Consumer_Predator_Function(x, params):
                       h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
                       h2 * x[1] * x[2] - c2 * x[2]])
     return new_x
-    
-    
+
+
 def Producer_Consumer_Predator():
-    params = {"a": 1, "l": 1, "k": 1000000,
+    params = {"a": 4, "l": 1, "k": 1000000,
               "g1": 1, "g2": 1, "h1": 2,
               "h2": 2, "c1": 1, "c2": 2}
     f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
