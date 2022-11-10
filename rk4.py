@@ -49,22 +49,31 @@ def RK4(f, x0, t0, tf, dt):
     return x, t
 
 
-def print_graphics(t, x, num, labels):
-    # plt.subplot(1, 2, 1)
+def print_graphics(t, x, labels):
+    plt.subplot(1, 2, 1)
     plt.plot(t, x[0, :], "r", label=labels[0])
     plt.plot(t, x[1, :], "b", label=labels[1])
-    if num == 3:
-        plt.plot(t, x[2, :], "g", label=labels[2])
     plt.ylabel("Количество (тыс.)")
     plt.xlabel("Время (t)")
     plt.grid()
     plt.legend()
 
-    # plt.subplot(1, 2, 2)
-    # plt.plot(x[0, :], x[1, :], x[2, :])
-    # plt.xlabel("Preys")
-    # plt.ylabel("Predators")
-    # plt.grid()
+    plt.subplot(1, 2, 2)
+    plt.plot(x[0, :], x[1, :])
+    plt.xlabel(labels[0])
+    plt.ylabel(labels[1])
+    plt.grid()
+    plt.show()
+
+
+def print_graphic(t, x, labels):
+    plt.plot(t, x[0, :], "r", label=labels[0])
+    plt.plot(t, x[1, :], "b", label=labels[1])
+    #plt.plot(t, x[2, :], "g", label=labels[2])
+    plt.ylabel("Количество (тыс.)")
+    plt.xlabel("Время (t)")
+    plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -73,38 +82,24 @@ def Rabbits_Foxes_Function(x, params):
     e2 = params['e2']
     a1 = params['a1']
     a2 = params['a2']
-    new_x = np.array([x[0] * (e1 - a1 * x[1]),
+    k1 = params['k1']
+    new_x = np.array([x[0] * (e1 - a1 * x[1]) * (1 - x[0] / k1),
                       -x[1] * (e2 - a2 * x[0])])
     return new_x
 
 
 def Rabbits_Foxes():
-    params = {"e1": 4, "a1": 2,
+    params = {"e1": 4, "a1": 2, "k1": 5,
               "e2": 1, "a2": 1}
 
     f = lambda t, x: Rabbits_Foxes_Function(x, params)
-    x0 = np.array([1., 1.])  # initial condition
+    x0 = np.array([2., 0.])  # initial condition
     t0 = 0  # time
-    tf = 30  # end of time
+    tf = 15  # end of time
     dt = 0.01  # step
     x, t = RK4(f, x0, t0, tf, dt)
     labels = ["Rabbits", "Foxes"]
-    print_graphics(t, x, 2, labels)
-
-
-def Prey_Prey_Predator_Function(x, params):
-    alpha = params['alpha']
-    beta = params['beta']
-    a1 = params['a1']
-    a2 = params['a2']
-    b1 = params['b1']
-    b2 = params['b2']
-    d1 = params['d1']
-    d2 = params['d2']
-    new_x = np.array([alpha - x[0] - a1 * x[1] - b1 * x[2],
-                      beta - x[1] - a2 * x[0] - b2 * x[2],
-                      x[2] * (-1 + d1 * x[0] + d2 * x[1] - x[2])])
-    return new_x
+    print_graphics(t, x, labels)
 
 
 def Producer_Consumer_Predator_Function(x, params):
@@ -124,34 +119,103 @@ def Producer_Consumer_Predator_Function(x, params):
 
 
 def Producer_Consumer_Predator():
-    params = {"a": 1, "l": 1, "k": 1000000,
-              "g1": 1, "g2": 1, "h1": 2,
+    params = {"a": 30, "l": 1, "k": 60,
+              "g1": 3, "g2": 1, "h1": 4,
               "h2": 2, "c1": 1, "c2": 2}
     f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
-    x0 = np.array([1., 1., 1.])
+    x0 = np.array([10., 3., 1.])
     t0 = 0
-    tf = 30
+    tf = 10
     dt = 0.01
     x, t = RK4(f, x0, t0, tf, dt)
     labels = ["Продуцент", "Консумент", "Хищник"]
-    print_graphics(t, x, 3, labels)
+    print_graphic(t, x, labels)
+
+
+def Prey_Prey_Predator_Function(x, params):
+    alpha = params['alpha']
+    beta = params['beta']
+    a1 = params['a1']
+    a2 = params['a2']
+    b1 = params['b1']
+    b2 = params['b2']
+    d1 = params['d1']
+    d2 = params['d2']
+    new_x = np.array([x[0] * (alpha - x[0] - a1 * x[1] - b1 * x[2]),
+                      x[1] * (beta - x[1] - a2 * x[0] - b2 * x[2]),
+                      x[2] * (-1 + d1 * x[0] + d2 * x[1] - x[2])])
+    return new_x
 
 
 def Prey_Prey_Predator():
-    params = {"alpha": 2.4, "a1": 6, "b1": 4,
-              "beta": 1.57, "a2": 1, "b2": 10,
+    params = {"alpha": 10, "a1": 2., "b1": 1.,
+              "beta": 7, "a2": 1, "b2": 1.5,
               "d1": 0.25, "d2": 4}
 
     f = lambda t, x: Prey_Prey_Predator_Function(x, params)
-    x0 = np.array([4, 3, 1])  # initial condition
+    x0 = np.array([2, 5, 4])  # initial condition
     t0 = 0  # time
-    tf = 1  # end of time
+    tf = 10  # end of time
     dt = 0.01  # step
     x, t = RK4(f, x0, t0, tf, dt)
     labels = ["Prey1", "Prey2", "Predator"]
-    print_graphics(t, x, 3, labels)
+    print_graphic(t, x, labels)
+
+
+def Rabbits_Foxes_Dissipative_Function(x, params):
+    e1 = params['e1']
+    e2 = params['e2']
+    a1 = params['a1']
+    a2 = params['a2']
+    a3 = params['a3']
+    a4 = params['a4']
+    new_x = np.array([x[0] * (e1 - a1 * x[0] - a2 * x[1]),
+                      x[1] * (e2 + a3 * x[0] - a4 * x[1])])
+    return new_x
+
+
+def Rabbits_Foxes_Dissipative():    # Модель консумента 1-ого порядка и консумента 2-ого порядка
+    params = {"e1": 4, "a1": 2, "a2": 2,
+              "e2": 2, "a3": 1, "a4": 8}
+
+    f = lambda t, x: Rabbits_Foxes_Dissipative_Function(x, params)
+    x0 = np.array([3., 5.])  # initial condition
+    t0 = 0  # time
+    tf = 10  # end of time
+    dt = 0.01  # step
+    x, t = RK4(f, x0, t0, tf, dt)
+    labels = ["Rabbits", "Foxes"]
+    print_graphics(t, x, labels)
+
+
+def Sheep_Rabbits_Function(x, params):
+    e1 = params['e1']
+    e2 = params['e2']
+    a1 = params['a1']
+    a2 = params['a2']
+    a3 = params['a3']
+    a4 = params['a4']
+    new_x = np.array([x[0] * (e1 + a1 * x[0] + a2 * x[1]),
+                      x[1] * (e2 + a3 * x[0] + a4 * x[1])])
+    return new_x
+
+
+def Sheep_Rabbits():    # Конкуренция видов
+    params = {"e1": 3, "a1": -1, "a2": -2,
+              "e2": 2, "a3": -1, "a4": -1}
+
+    f = lambda t, x: Sheep_Rabbits_Function(x, params)
+    x0 = np.array([2., 1.])  # initial condition
+    t0 = 0  # time
+    tf = 10  # end of time
+    dt = 0.01  # step
+    x, t = RK4(f, x0, t0, tf, dt)
+    labels = ["Rabbits", "Sheep"]
+    print_graphics(t, x, labels)
 
 
 Producer_Consumer_Predator()
-# Rabbits_Foxes()
+#Rabbits_Foxes()
+# Rabbits_Foxes_Dissipative()
 #Prey_Prey_Predator()
+#Sheep_Rabbits()
