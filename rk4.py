@@ -26,6 +26,7 @@ def ThreeEightsMethod(f, x0, t0, tf, dt):
     nx = x0.size
     x = np.zeros((nx, nt))
     x[:, 0] = x0
+    error = 0
     for k in range(nt - 1):
         k1 = dt * f(t[k], x[:, k])
         k2 = dt * f(t[k] + dt * a21, x[:, k] + k1 * a21)
@@ -33,7 +34,8 @@ def ThreeEightsMethod(f, x0, t0, tf, dt):
         k4 = dt * f(t[k] + dt * (a41 + a42 + a43), x[:, k] + k1 * a41 + k2 * a42 + k3 * a43)
         dx = b1 * k1 + b2 * k2 + b3 * k3 + b4 * k4
         x[:, k + 1] = x[:, k] + dx
-    return x, t
+        error += abs(x.max() ** 4 * dt ** 5 * max(k1) * 9.91 / 100)
+    return x, t, error
 
 
 def compare(arr1, arr2):
@@ -95,7 +97,7 @@ def DormandPrince(f, x0, t0, atol, rtol, h, maxiter):
     t[0] = t0
     x = np.zeros((order, maxiter + 1))
     x[:, 0] = x0
-
+    error = 0
     for i in range(maxiter):
         x0 = x[:, i]
         K1 = h * f(t[i], x0)
@@ -108,7 +110,7 @@ def DormandPrince(f, x0, t0, atol, rtol, h, maxiter):
 
         delta = abs((b1 - b1p) * K1 + (b3 - b3p) * K3 + (b4 - b4p) * K4
                     + (b5 - b5p) * K5 + (b6 - b6p) * K6 + (b7 - b7p) * K7)
-
+        error += max(delta)
         tol = []
         x1 = x[:, i]
         for k in range(order):
@@ -129,7 +131,8 @@ def DormandPrince(f, x0, t0, atol, rtol, h, maxiter):
         x[:, i + 1] = x[:, i] + dx
         t[i + 1] = t[i] + h
 
-    return x, t
+    error *= 10 ** -6
+    return x, t, error
 
 
 # Defining the Ralston 4 Method
@@ -153,6 +156,7 @@ def Ralston4(f, x0, t0, tf, dt):
     nx = x0.size
     x = np.zeros((nx, nt))
     x[:, 0] = x0
+    error = 0
     for k in range(nt - 1):
         k1 = dt * f(t[k], x[:, k])
         k2 = dt * f(t[k] + dt * a21, x[:, k] + k1 * a21)
@@ -160,7 +164,9 @@ def Ralston4(f, x0, t0, tf, dt):
         k4 = dt * f(t[k] + dt * (a41 + a42 + a43), x[:, k] + k1 * a41 + k2 * a42 + k3 * a43)
         dx = b1 * k1 + b2 * k2 + b3 * k3 + b4 * k4
         x[:, k + 1] = x[:, k] + dx
-    return x, t
+        if k == 0:
+            error += abs(x.max() ** 4 * dt ** 5 * max(k1) * 5.46 / 100)
+    return x, t, error
 
 
 # Defining the Runge Kutta 4 Method
@@ -170,6 +176,7 @@ def RK4(f, x0, t0, tf, dt):
     nx = x0.size
     x = np.zeros((nx, nt))
     x[:, 0] = x0
+    error = 0
     for k in range(nt - 1):
         k1 = dt * f(t[k], x[:, k])
         k2 = dt * f(t[k] + dt / 2, x[:, k] + k1 / 2)
@@ -177,7 +184,8 @@ def RK4(f, x0, t0, tf, dt):
         k4 = dt * f(t[k] + dt, x[:, k] + k3)
         dx = (k1 + 2 * k2 + 2 * k3 + k4) / 6
         x[:, k + 1] = x[:, k] + dx
-    return x, t
+        error += abs(x.max() ** 4 * dt ** 5 * max(k1) * 10.14 / 100)
+    return x, t, error
 
 
 def print_graphics(t, x, labels):
@@ -228,39 +236,47 @@ def Rabbits_Foxes():
     t0 = 0  # time
     tf = 10  # end of time
     dt = 0.01  # step
-    x, t = ThreeEightsMethod(f, x0, t0, tf, dt)
+    atol = 1.0e-5
+    rtol = 1
+    maxiter = int(tf / dt)
+    # x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
+    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    # x, t, error = Ralston4(f, x0, t0, tf, dt)
+    print(error)
     labels = ["Rabbits", "Foxes"]
     print_graphics(t, x, labels)
 
 
-def Producer_Consumer_Predator_Function(x, params):
-    a = params['a']
-    l = params['l']
-    k = params['k']
-    g1 = params['g1']
-    g2 = params['g2']
-    h1 = params['h1']
-    h2 = params['h2']
-    c1 = params['c1']
-    c2 = params['c2']
-    new_x = np.array([a * x[0] * (x[0] - l) * (1 - x[0] / k) - g1 * x[0] * x[1],
-                      h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
-                      h2 * x[1] * x[2] - c2 * x[2]])
-    return new_x
+# def Producer_Consumer_Predator_Function(x, params):
+#     a = params['a']
+#     l = params['l']
+#     k = params['k']
+#     g1 = params['g1']
+#     g2 = params['g2']
+#     h1 = params['h1']
+#     h2 = params['h2']
+#     c1 = params['c1']
+#     c2 = params['c2']
+#     new_x = np.array([a * x[0] * (x[0] - l) * (1 - x[0] / k) - g1 * x[0] * x[1],
+#                       h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
+#                       h2 * x[1] * x[2] - c2 * x[2]])
+#     return new_x
 
 
-def Producer_Consumer_Predator():
-    params = {"a": 30, "l": 1, "k": 60,
-              "g1": 3, "g2": 1, "h1": 4,
-              "h2": 2, "c1": 1, "c2": 2}
-    f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
-    x0 = np.array([10., 3., 1.])
-    t0 = 0
-    tf = 10
-    dt = 0.01
-    x, t = RK4(f, x0, t0, tf, dt)
-    labels = ["Продуцент", "Консумент", "Хищник"]
-    print_graphic(t, x, labels)
+# def Producer_Consumer_Predator():
+#     params = {"a": 30, "l": 1, "k": 60,
+#               "g1": 3, "g2": 1, "h1": 4,
+#               "h2": 2, "c1": 1, "c2": 2}
+#     f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
+#     x0 = np.array([10., 3., 1.])
+#     t0 = 0
+#     tf = 10
+#     dt = 0.01
+#     x, t, error = RK4(f, x0, t0, tf, dt)
+#     print(error)
+#     labels = ["Продуцент", "Консумент", "Хищник"]
+#     print_graphic(t, x, labels)
 
 
 def Prey_Prey_Predator_Function(x, params):
@@ -291,8 +307,11 @@ def Prey_Prey_Predator():
     atol = 1.0e-5
     rtol = 1
     maxiter = int(tf / dt)
-    x, t = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
-    # x, t = RK4(f, x0, t0, tf, dt)
+    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
+    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    # x, t, error = Ralston4(f, x0, t0, tf, dt)
+    print(error)
     labels = ["Prey1", "Prey2", "Predator"]
     print_graphic(t, x, labels)
 
@@ -318,7 +337,15 @@ def Rabbits_Foxes_Dissipative():  # Модель консумента 1-ого �
     t0 = 0  # time
     tf = 10  # end of time
     dt = 0.01  # step
-    x, t = RK4(f, x0, t0, tf, dt)
+    atol = 1.0e-5
+    rtol = 1
+    maxiter = int(tf / dt)
+    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
+    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    # x, t, error = Ralston4(f, x0, t0, tf, dt)
+    print(error)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
     labels = ["Rabbits", "Foxes"]
     print_graphics(t, x, labels)
 
@@ -336,21 +363,26 @@ def Sheep_Rabbits_Function(x, params):
 
 
 def Sheep_Rabbits():  # Конкуренция видов
-    params = {"e1": 3, "a1": -1, "a2": -2,
-              "e2": 2, "a3": -1, "a4": -1}
+    params = {"e1": 6, "a1": -2, "a2": -3,
+              "e2": 8, "a3": -2, "a4": -4}
 
     f = lambda t, x: Sheep_Rabbits_Function(x, params)
-    x0 = np.array([2., 1.])  # initial condition
+    x0 = np.array([4., 6.])  # initial condition
     t0 = 0  # time
     tf = 10  # end of time
     dt = 0.01  # step
-    x, t = RK4(f, x0, t0, tf, dt)
+    atol = 1.0e-5
+    rtol = 1
+    maxiter = int(tf / dt)
+    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
+    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    # x, t, error = Ralston4(f, x0, t0, tf, dt)
+    print(error)
     labels = ["Rabbits", "Sheep"]
     print_graphics(t, x, labels)
 
-
-# Producer_Consumer_Predator()
-Rabbits_Foxes()
+# Rabbits_Foxes()
 # Rabbits_Foxes_Dissipative()
-#Prey_Prey_Predator()
+# Prey_Prey_Predator()
 # Sheep_Rabbits()
