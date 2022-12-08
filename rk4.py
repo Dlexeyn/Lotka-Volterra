@@ -239,44 +239,56 @@ def Rabbits_Foxes():
     atol = 1.0e-5
     rtol = 1
     maxiter = int(tf / dt)
-    # x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
     # x, t, error = RK4(f, x0, t0, tf, dt)
     # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
     # x, t, error = Ralston4(f, x0, t0, tf, dt)
-    print(error)
+    print("Error: ", error)
     labels = ["Rabbits", "Foxes"]
     print_graphics(t, x, labels)
 
 
-# def Producer_Consumer_Predator_Function(x, params):
-#     a = params['a']
-#     l = params['l']
-#     k = params['k']
-#     g1 = params['g1']
-#     g2 = params['g2']
-#     h1 = params['h1']
-#     h2 = params['h2']
-#     c1 = params['c1']
-#     c2 = params['c2']
-#     new_x = np.array([a * x[0] * (x[0] - l) * (1 - x[0] / k) - g1 * x[0] * x[1],
-#                       h1 * x[0] * x[1] - g2 * x[0] * x[1] - c1 * x[1],
-#                       h2 * x[1] * x[2] - c2 * x[2]])
-#     return new_x
+def Prey_Prey_Predator_Dynamic_Function(x, params):
+    e1 = params['e1']
+    e2 = params['e2']
+    e3 = params['e3']
+    a1 = params['a1']
+    a2 = params['a2']
+    k1 = params['k1']
+    k2 = params['k2']
+    k3 = params['k3']
+    #
+    # new_x = np.array([x[0] * (e1 - a1 * x[2]) * (1 - x[0] / k1),
+    #                   x[1] * (e2 - a2 * x[2]) * (1 - x[1] / k2),
+    #                   -x[2] * (e3 - a1 * x[0] - a2 * x[1])])
+
+    new_x = np.array([x[0] * (e1 - a1 * x[2]) * (1 - x[0] / k1),
+                      x[1] * (e2 - a2 * x[2]) * (1 - x[1] / k2),
+                      -x[2] * (e3 - a1 * x[0] - a2 * x[1] + k3)])
+    return new_x
 
 
-# def Producer_Consumer_Predator():
-#     params = {"a": 30, "l": 1, "k": 60,
-#               "g1": 3, "g2": 1, "h1": 4,
-#               "h2": 2, "c1": 1, "c2": 2}
-#     f = lambda t, x: Producer_Consumer_Predator_Function(x, params)
-#     x0 = np.array([10., 3., 1.])
-#     t0 = 0
-#     tf = 10
-#     dt = 0.01
-#     x, t, error = RK4(f, x0, t0, tf, dt)
-#     print(error)
-#     labels = ["Продуцент", "Консумент", "Хищник"]
-#     print_graphic(t, x, labels)
+def Prey_Prey_Predator_Dynamic():
+    params = {"e1": 4, "a1": 2, "k1": 5,
+              "e2": 2, "a2": 1, "k2": 5,
+              "e3": 3, "k3": 6}
+
+    f = lambda t, x: Prey_Prey_Predator_Dynamic_Function(x, params)
+    x0 = np.array([3., 4., 1.])  # initial condition
+    t0 = 0  # time
+    tf = 10  # end of time
+    dt = 0.01  # step
+    atol = 1.0e-5
+    rtol = 1
+    maxiter = int(tf / dt)
+    # x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = RK4(f, x0, t0, tf, dt)
+    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    x, t, error = Ralston4(f, x0, t0, tf, dt)
+    print("Error: ", error)
+    labels = ["Prey1", "Prey2", "Predator"]
+    print_graphic(t, x, labels)
+    pass
 
 
 def Prey_Prey_Predator_Function(x, params):
@@ -300,20 +312,50 @@ def Prey_Prey_Predator():
               "d1": 0.25, "d2": 4}
 
     f = lambda t, x: Prey_Prey_Predator_Function(x, params)
+    relError = 0.00001 # max 0.00001
+    absError = 0
     x0 = np.array([3, 1, 2])  # initial condition
     t0 = 0  # time
     tf = 10  # end of time
-    dt = 0.01  # step
+    dt1 = 0.01  # step
+    dt2 = 0.1
     atol = 1.0e-5
     rtol = 1
-    maxiter = int(tf / dt)
-    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
-    # x, t, error = RK4(f, x0, t0, tf, dt)
-    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
-    # x, t, error = Ralston4(f, x0, t0, tf, dt)
-    print(error)
+    maxiter1 = int(tf / dt1) - 1
+    maxiter2 = int(tf / dt2) - 1
+    x1, t, error1 = DormandPrince(f, x0, t0, atol, rtol, dt1, maxiter1)
+    x2, t, error2 = RK4(f, x0, t0, tf, dt2)
+
+    xp = x1[:, maxiter1]
+    x = x2[:, maxiter2]
+    delta = abs(xp - x)
+    delta = delta.max()
+    while delta > relError:
+        dt2 -= 0.000001
+        x2, t, error2 = RK4(f, x0, t0, tf, dt2)
+        x = x2[:, maxiter2]
+        delta = abs(xp - x)
+        delta = delta.max()
+    print("Step = ", dt2)
+    # sum = 0
+    # for j in range(x0.size):
+    #     sum += ((xp[j] - x[j]) / (relError * max(abs(xp[j]), abs(x[j])))) ** 2
+    #
+    # err = math.sqrt(1/x0.size * sum)
+    # dt2 = dt1 * ((1 / err) ** (1 / 5))
+    #
+    # x3, t, error3 = RK4(f, x0, t0, tf, 1)
+    # delta = delta.max()
+    # if delta < relError:
+    #     print("{0} < delta with step = {1}".format(delta, dt2))
+    # else:
+    #     print("{0} > delta with step = {1}".format(delta, dt2))
+
+    print("Error1: ", error1)
+    print("Error2: ", error2)
+    # print("Error3: ", error3)
     labels = ["Prey1", "Prey2", "Predator"]
-    print_graphic(t, x, labels)
+    print_graphic(t, x2, labels)
 
 
 def Rabbits_Foxes_Dissipative_Function(x, params):
@@ -340,12 +382,11 @@ def Rabbits_Foxes_Dissipative():  # Модель консумента 1-ого �
     atol = 1.0e-5
     rtol = 1
     maxiter = int(tf / dt)
-    x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
+    # x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
     # x, t, error = RK4(f, x0, t0, tf, dt)
-    # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
+    x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
     # x, t, error = Ralston4(f, x0, t0, tf, dt)
-    print(error)
-    # x, t, error = RK4(f, x0, t0, tf, dt)
+    print("Error: ", error)
     labels = ["Rabbits", "Foxes"]
     print_graphics(t, x, labels)
 
@@ -378,11 +419,13 @@ def Sheep_Rabbits():  # Конкуренция видов
     # x, t, error = RK4(f, x0, t0, tf, dt)
     # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
     # x, t, error = Ralston4(f, x0, t0, tf, dt)
-    print(error)
+    print("Error: ", error)
     labels = ["Rabbits", "Sheep"]
     print_graphics(t, x, labels)
 
+
 # Rabbits_Foxes()
-# Rabbits_Foxes_Dissipative()
-# Prey_Prey_Predator()
+# Prey_Prey_Predator_Dynamic()
+# # Rabbits_Foxes_Dissipative()
+Prey_Prey_Predator()
 # Sheep_Rabbits()
