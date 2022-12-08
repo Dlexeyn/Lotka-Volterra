@@ -242,7 +242,7 @@ def Rabbits_Foxes():
     x, t, error = DormandPrince(f, x0, t0, atol, rtol, dt, maxiter)
     # x, t, error = RK4(f, x0, t0, tf, dt)
     # x, t, error = ThreeEightsMethod(f, x0, t0, tf, dt)
-    #x, t, error = Ralston4(f, x0, t0, tf, dt)
+    # x, t, error = Ralston4(f, x0, t0, tf, dt)
     print("Error: ", error)
     labels = ["Rabbits", "Foxes"]
     print_graphics(t, x, labels)
@@ -312,41 +312,50 @@ def Prey_Prey_Predator():
               "d1": 0.25, "d2": 4}
 
     f = lambda t, x: Prey_Prey_Predator_Function(x, params)
-    relError = 1
+    relError = 0.00001 # max 0.00001
     absError = 0
     x0 = np.array([3, 1, 2])  # initial condition
     t0 = 0  # time
     tf = 10  # end of time
     dt1 = 0.01  # step
+    dt2 = 0.1
     atol = 1.0e-5
     rtol = 1
-    maxiter = int(tf / dt1) - 1
-    x1, t, error1 = DormandPrince(f, x0, t0, atol, rtol, dt1, maxiter)
-    x2, t, error2 = RK4(f, x0, t0, tf, dt1)
+    maxiter1 = int(tf / dt1) - 1
+    maxiter2 = int(tf / dt2) - 1
+    x1, t, error1 = DormandPrince(f, x0, t0, atol, rtol, dt1, maxiter1)
+    x2, t, error2 = RK4(f, x0, t0, tf, dt2)
 
-    xp = x1[:, maxiter]
-    x = x2[:, maxiter]
+    xp = x1[:, maxiter1]
+    x = x2[:, maxiter2]
     delta = abs(xp - x)
-
-    sum = 0
-    for j in range(x0.size):
-        sum += ((xp[j] - x[j]) / (relError * max(abs(xp[j]), abs(x[j])))) ** 2
-
-    err = math.sqrt(1/x0.size * sum)
-    dt2 = dt1 * ((1 / err) ** (1 / 5))
-
-    x3, t, error3 = RK4(f, x0, t0, tf, 1)
     delta = delta.max()
-    if delta < relError:
-        print("{0} < delta with step = {1}".format(delta, dt2))
-    else:
-        print("{0} > delta with step = {1}".format(delta, dt2))
+    while delta > relError:
+        dt2 -= 0.000001
+        x2, t, error2 = RK4(f, x0, t0, tf, dt2)
+        x = x2[:, maxiter2]
+        delta = abs(xp - x)
+        delta = delta.max()
+    print("Step = ", dt2)
+    # sum = 0
+    # for j in range(x0.size):
+    #     sum += ((xp[j] - x[j]) / (relError * max(abs(xp[j]), abs(x[j])))) ** 2
+    #
+    # err = math.sqrt(1/x0.size * sum)
+    # dt2 = dt1 * ((1 / err) ** (1 / 5))
+    #
+    # x3, t, error3 = RK4(f, x0, t0, tf, 1)
+    # delta = delta.max()
+    # if delta < relError:
+    #     print("{0} < delta with step = {1}".format(delta, dt2))
+    # else:
+    #     print("{0} > delta with step = {1}".format(delta, dt2))
 
     print("Error1: ", error1)
     print("Error2: ", error2)
-    print("Error3: ", error3)
+    # print("Error3: ", error3)
     labels = ["Prey1", "Prey2", "Predator"]
-    print_graphic(t, x3, labels)
+    print_graphic(t, x2, labels)
 
 
 def Rabbits_Foxes_Dissipative_Function(x, params):
